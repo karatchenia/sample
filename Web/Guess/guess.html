@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Are you good at guessing?</title>
+    <link href="site.css" type="text/css" rel="stylesheet">
+    <!-- Chrome requests "/favicon.ico" -->
+    <!--link rel="shortcut icon" href="favicon.ico" type="image/x-icon"-->
+</head>
+<body>
+    <div class="rounded_corners">
+        <H1 class="center">Guess what square is marked?</H1>
+        <p id="buttons" />
+        <div>
+            <article>
+                <span>Guess ratio:</span><br>
+                <progress id="progress" class="quarter_lin2e" value="0" max="100"></progress>
+                <span id="progressText">0</span><span>%</span>
+            </article>
+            <article>
+                <p><span id="runningTimeText"></span></p>
+            </article>
+            <article>
+                <canvas id="graph">Update your browser to support the canvas tag.</canvas>
+            </article>
+        </div>
+    </div>
+    <script src="guess.js"></script>
+</body>
+</html>
