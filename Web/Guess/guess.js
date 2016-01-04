@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 if (null == window.MyCompany) {
     window.MyCompany = {};
@@ -37,7 +37,7 @@ MyCompany.GetControl = function (controlId) {
         ? null : document.getElementById(controlId);
 
     if (null == result) {
-        var nameFormatted = !controlId ? "null" : controlId;
+        var nameFormatted = !controlId ? 'null' : controlId;
         console.log('Error: cannot find the control named "'
             + nameFormatted + '".');
     }
@@ -46,11 +46,12 @@ MyCompany.GetControl = function (controlId) {
 };
 
 MyCompany.DecimalToString = function (decimalValue, decimalPlaces) {
-    if (!decimalPlaces) {
+    if (!decimalPlaces || decimalPlaces <= 0) {
         decimalPlaces = 2;
-    }
+	}
 
-    var precision = 100;
+	var precision = Math.pow(10, decimalPlaces);
+
     var result = parseFloat(Math.round(decimalValue * precision) / precision).toFixed(decimalPlaces);
     return result;
 };
@@ -97,6 +98,15 @@ MyCompany.GetDistributionRatios = function (values, valuesSize, offset, totalCou
 }
 
 MyCompany.RatioToColor = function (ratio) {
+	if (null == ratio){
+		ratio = 0;
+	}
+	
+	var isOk = 0 <= ratio && ratio <= 1;
+	if (!isOk){
+		throw 'The ratio(' + ratio + ') must be within [0, 1].';
+	}
+	
     var colorMax = 255;
     var color = (Math.floor(colorMax * ratio)).toString(16);
     var result = color + color + color;
@@ -132,7 +142,7 @@ MyCompany.DrawGraph = function (graphControl) {
     var ratios = MyCompany.GetDistributionRatios(MyCompany.Report.Distribution, MyCompany.ButtonCount,
 		MyCompany.MinimumId, MyCompany.Report.Sessions, MyCompany.MaxPercentage);
 
-    var context = graphControl.getContext("2d");
+    var context = graphControl.getContext('2d');
     context.clearRect(0, 0, graphControl.width, graphControl.height);
     context.font = MyCompany.Font;
 
@@ -208,7 +218,9 @@ MyCompany.FinishSession = function() {
 }
 
 MyCompany.FormHtmlReport = function () {
-    var firstPercent = MyCompany.DecimalToString(MyCompany.MaxPercentage * MyCompany.Report.FirstStepCount / MyCompany.Report.Sessions);
+    var sessions = MyCompany.Report.Sessions;
+    var firstPercent = (0 == sessions) ? '0' : MyCompany.DecimalToString(MyCompany.MaxPercentage *
+	MyCompany.Report.FirstStepCount / sessions);
 
     var result = 'Last attempt: ' + MyCompany.Session.Count +
     ' out of ' + MyCompany.ButtonCount + ' steps.' +
@@ -346,9 +358,9 @@ MyCompany.InitializeButtonPressed = function () {
     body.addEventListener(onKeyPressName, keyPressed);
 }
 
-MyCompany.Initialize = function () {
-    MyCompany.InitializeMembers();
+MyCompany.InitializeMembers();
 
+MyCompany.InitializeControls = function () {
     var buttons = MyCompany.GetControl('buttons');
     var runningTimeText = MyCompany.GetControl('runningTimeText');
     var graphControl = MyCompany.GetControl('graph');
@@ -366,5 +378,3 @@ MyCompany.Initialize = function () {
     runningTimeText.innerHTML = 'Click one of the buttons.';
     MyCompany.Session.Start(progressControl, progressText, graphControl);
 };
-
-MyCompany.Initialize();
