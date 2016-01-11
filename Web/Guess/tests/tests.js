@@ -1,15 +1,17 @@
-QUnit.test('GetRandomInt', function(assert) {
+'use strict';
+
+QUnit.test('getRandomInt', function(assert) {
 	var minInclusive = 10;
 	var maxExclusive = 12345678;
 
-	var number = MyCompany.GetRandomInt(minInclusive, maxExclusive);
+	var number = MyCompany.getRandomInt(minInclusive, maxExclusive);
 	var type = typeof(number);
 	assert.ok('number' === type, 'Returned type');
 	
 	var isWithin = minInclusive <= number && number < maxExclusive;
 	assert.ok(isWithin, 'isWithin, number=' + number.toString() + '.');
 });
-QUnit.test('RunAnync', function(assert) {
+QUnit.test('runAnync', function(assert) {
 	assert.expect(1);
 	var done = assert.async();
 
@@ -21,31 +23,31 @@ QUnit.test('RunAnync', function(assert) {
 	};
 
 	var delay = 1;
-	MyCompany.RunAnync(func, delay);
+	MyCompany.runAnync(func, delay);
 });
-QUnit.test('GetControl', function(assert) {
+QUnit.test('getControl', function(assert) {
 	var name = 'qunit';
-	var control = MyCompany.GetControl(name);
+	var control = MyCompany.getControl(name);
 	assert.ok(null != control, 'The control "' + name + '" is not found in the html file.');
 	assert.ok('DIV' === control.tagName.toUpperCase(), 'tagName');
 
 	var type = typeof(control);
 	assert.ok('object' === type, 'type');
 });
-QUnit.test('DecimalToString', function(assert) {
+QUnit.test('decimalToString', function(assert) {
 	var value = 100.123421103;
 	var decimalPlaces = 3;
-	var actual = MyCompany.DecimalToString(value, decimalPlaces);
+	var actual = MyCompany.decimalToString(value, decimalPlaces);
 	var expected = '100.123';
 	assert.strictEqual(expected, actual);
 });
-QUnit.test('ScaleArray', function(assert) {
+QUnit.test('scaleArray', function(assert) {
 	var values = [1, 4, 7];
 	var multiplyCoefficient = 3;
 	var expected = [3, 12, 21];
 
 	var valuesSize = values.length;
-	MyCompany.ScaleArray(values, valuesSize, multiplyCoefficient);
+	MyCompany.scaleArray(values, valuesSize, multiplyCoefficient);
 	assert.deepEqual(expected, values);
 });
 
@@ -85,7 +87,7 @@ var assertArrayClose = function(assert, expected, actual, epsilon, message){
 	while(++index < expectedLength);
 };
 
-QUnit.test('GetDistributionRatios', function(assert) {
+QUnit.test('getDistributionRatios', function(assert) {
 	var values = [100, 8, 7, 4, 2, 1];
 	var offset = 1;
 	var valuesSize = values.length - offset;
@@ -93,11 +95,11 @@ QUnit.test('GetDistributionRatios', function(assert) {
 	var totalCount = values.reduce((prev, curr) => prev + curr) - values[0];
 	var expected = [100, 87.5, 50, 25, 12.5];
 
-	var actual = MyCompany.GetDistributionRatios(values, valuesSize, offset, totalCount, maxPercentage);
+	var actual = MyCompany.getDistributionRatios(values, valuesSize, offset, totalCount, maxPercentage);
 	var epsilon = 0.000000001;
 	assertArrayClose(assert,expected, actual, epsilon);
 });
-QUnit.test('RatioToColor', function(assert) {
+QUnit.test('ratioToColor', function(assert) {
 	var tests = [
 		{ratio:0, color:'000'},
 		{ratio:1.0, color:'ffffff'},
@@ -106,14 +108,14 @@ QUnit.test('RatioToColor', function(assert) {
 	];
 
 	for	(var index in tests){
-		var actual = MyCompany.RatioToColor(tests[index].ratio);
+		var actual = MyCompany.ratioToColor(tests[index].ratio);
 		assert.strictEqual(tests[index].color, actual.toLowerCase());
 	}
 });
-QUnit.test('FormHtmlReport', function(assert) {
-	MyCompany.InitializeMembers();
+QUnit.test('formHtmlReport', function(assert) {
+	MyCompany.initializeMembers();
 	var expected = 'Last attempt: 0 out of 9 steps.<br>One step sessions: <strong>0, 0%</strong>.<br>Total sessions: 0.';
-	var actual = MyCompany.FormHtmlReport();
+	var actual = MyCompany.formHtmlReport();
 	assert.strictEqual(expected, actual, 'Empty report');
 	
 	try{
@@ -122,28 +124,28 @@ QUnit.test('FormHtmlReport', function(assert) {
 		MyCompany.Session.Count = 3;
 		
 		var expected2 = 'Last attempt: 3 out of 9 steps.<br>One step sessions: <strong>7, 63.64%</strong>.<br>Total sessions: 11.';
-		var actual2 = MyCompany.FormHtmlReport();
+		var actual2 = MyCompany.formHtmlReport();
 
 		assert.strictEqual(expected2, actual2, 'Full report');
 	}
 	finally{
-		MyCompany.InitializeMembers();
+		MyCompany.initializeMembers();
 	}
 });
-QUnit.test('FillNumberArray', function(assert) {
+QUnit.test('fillNumberArray', function(assert) {
 	var size = 7;
 	var defaultValue = 1389;
 	var expected = [defaultValue, defaultValue, defaultValue, defaultValue,
 		defaultValue, defaultValue, defaultValue ];
 
-	var actual = MyCompany.FillNumberArray(size, defaultValue);
+	var actual = MyCompany.fillNumberArray(size, defaultValue);
     assert.deepEqual(expected, actual);
 });
-QUnit.test('DrawDiagram', function(assert) {
-	MyCompany.InitializeMembers();
+QUnit.test('drawDiagram', function(assert) {
+	MyCompany.initializeMembers();
 	try{
 		var defaultValue = 3;
-		MyCompany.Report.Distribution = MyCompany.FillNumberArray(MyCompany.ButtonCount, defaultValue);
+		MyCompany.Report.Distribution = MyCompany.fillNumberArray(MyCompany.ButtonCount, defaultValue);
 
 		var someValue = 10;
 		var someIndex = 4;
@@ -154,7 +156,7 @@ QUnit.test('DrawDiagram', function(assert) {
 		var canvas = document.createElement('canvas');
 		canvas.width = 300;
 		canvas.height = 200;
-		MyCompany.DrawGraph(canvas);
+		MyCompany.drawGraph(canvas);
 		
 		var context = canvas.getContext('2d');
 		var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
@@ -174,6 +176,6 @@ QUnit.test('DrawDiagram', function(assert) {
 		assert.equal(255, a[i], 'image[' + i.toString() + ']');
 	}
 	finally{
-		MyCompany.InitializeMembers();
+		MyCompany.initializeMembers();
 	}
 });

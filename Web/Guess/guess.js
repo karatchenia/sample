@@ -7,20 +7,20 @@ if (null == window.MyCompany) {
 MyCompany.Report = {};
 MyCompany.Session = {};
 
-MyCompany.GetRandom = function (minInclusive, maxExclusive) {
+MyCompany.getRandom = function (minInclusive, maxExclusive) {
     var result = Math.random() * (maxExclusive - minInclusive) + minInclusive;
     return result;
 };
 
-MyCompany.GetRandomInt = function (minInclusive, maxExclusive) {
-    var raw = MyCompany.GetRandom(minInclusive, maxExclusive);
+MyCompany.getRandomInt = function (minInclusive, maxExclusive) {
+    var raw = MyCompany.getRandom(minInclusive, maxExclusive);
     var result = Math.floor(raw);
     return result;
 };
 
-MyCompany.RunAnync = function (callback, delay) {
+MyCompany.runAnync = function (callback, delay) {
     if (null == callback) {
-        throw 'The "callback" must be not null in RunAnync.';
+        throw new Error('The "callback" must be not null in runAnync.');
     }
 
     if (!delay) {
@@ -32,7 +32,7 @@ MyCompany.RunAnync = function (callback, delay) {
     }, delay);
 };
 
-MyCompany.GetControl = function (controlId) {
+MyCompany.getControl = function (controlId) {
     var result = (!controlId || !(controlId.length))
         ? null : document.getElementById(controlId);
 
@@ -45,7 +45,7 @@ MyCompany.GetControl = function (controlId) {
     return result;
 };
 
-MyCompany.DecimalToString = function (decimalValue, decimalPlaces) {
+MyCompany.decimalToString = function (decimalValue, decimalPlaces) {
     if (!decimalPlaces || decimalPlaces <= 0) {
         decimalPlaces = 2;
 	}
@@ -56,7 +56,7 @@ MyCompany.DecimalToString = function (decimalValue, decimalPlaces) {
     return result;
 };
 
-MyCompany.ScaleArray = function (values, valuesSize, multiplyCoefficient) {
+MyCompany.scaleArray = function (values, valuesSize, multiplyCoefficient) {
     var j = 0;
     do {
         values[j] = multiplyCoefficient * values[j];
@@ -64,7 +64,7 @@ MyCompany.ScaleArray = function (values, valuesSize, multiplyCoefficient) {
     while (++j < valuesSize);
 }
 
-MyCompany.PreCalcRatiosAndMax = function (values, valuesSize, offset, multiplyCoefficient) {
+MyCompany.preCalcRatiosAndMax = function (values, valuesSize, offset, multiplyCoefficient) {
     var ratios = [];
 
     var j = 0;
@@ -83,28 +83,28 @@ MyCompany.PreCalcRatiosAndMax = function (values, valuesSize, offset, multiplyCo
     return result;
 }
 
-MyCompany.GetDistributionRatios = function (values, valuesSize, offset, totalCount, maxPercentage) {
+MyCompany.getDistributionRatios = function (values, valuesSize, offset, totalCount, maxPercentage) {
     var multiplyCoefficient = !totalCount ? 0 : maxPercentage / totalCount;
 
-    var preCalc = MyCompany.PreCalcRatiosAndMax(values, valuesSize, offset, multiplyCoefficient);
+    var preCalc = MyCompany.preCalcRatiosAndMax(values, valuesSize, offset, multiplyCoefficient);
     var result = preCalc.Ratios;
 
     if (0 < preCalc.MaxValue) {
         var scale = maxPercentage / preCalc.MaxValue;
-        MyCompany.ScaleArray(result, valuesSize, scale);
+        MyCompany.scaleArray(result, valuesSize, scale);
     }
 
     return result;
 }
 
-MyCompany.RatioToColor = function (ratio) {
+MyCompany.ratioToColor = function (ratio) {
 	if (null == ratio){
 		ratio = 0;
 	}
 	
 	var isOk = 0 <= ratio && ratio <= 1;
 	if (!isOk){
-		throw 'The ratio(' + ratio + ') must be within [0, 1].';
+		throw new Error('The ratio(' + ratio + ') must be within [0, 1].');
 	}
 	
     var colorMax = 255;
@@ -113,10 +113,10 @@ MyCompany.RatioToColor = function (ratio) {
     return result;
 }
 
-MyCompany.DrawDiagram = function (context, barCount, ratios, maxValue) {
+MyCompany.drawDiagram = function (context, barCount, ratios, maxValue) {
     var j = 0;
     do {
-        context.fillStyle = '#' + MyCompany.RatioToColor(j / barCount);
+        context.fillStyle = '#' + MyCompany.ratioToColor(j / barCount);
 
         var delta = maxValue - ratios[j];
         if (delta < 0) {//Rounding error.
@@ -134,32 +134,32 @@ MyCompany.DrawDiagram = function (context, barCount, ratios, maxValue) {
     while (++j < barCount);
 }
 
-MyCompany.DrawGraph = function (graphControl) {
+MyCompany.drawGraph = function (graphControl) {
     if (0 == MyCompany.Report.Sessions) {
         return;
     }
 
-    var ratios = MyCompany.GetDistributionRatios(MyCompany.Report.Distribution, MyCompany.ButtonCount,
+    var ratios = MyCompany.getDistributionRatios(MyCompany.Report.Distribution, MyCompany.ButtonCount,
 		MyCompany.MinimumId, MyCompany.Report.Sessions, MyCompany.MaxPercentage);
 
     var context = graphControl.getContext('2d');
     context.clearRect(0, 0, graphControl.width, graphControl.height);
     context.font = MyCompany.Font;
 
-    MyCompany.DrawDiagram(context, MyCompany.ButtonCount, ratios, MyCompany.MaxPercentage);
+    MyCompany.drawDiagram(context, MyCompany.ButtonCount, ratios, MyCompany.MaxPercentage);
 }
 
-MyCompany.Report.CalcRatio = function () {
+MyCompany.Report.calcRatio = function () {
     var ratio = 0;
     if (0 < MyCompany.Report.TotalSteps) {
-        ratio = MyCompany.DecimalToString(MyCompany.MaxPercentage *
+        ratio = MyCompany.decimalToString(MyCompany.MaxPercentage *
         (MyCompany.Report.TotalSteps - MyCompany.Report.IncorrectSteps) / MyCompany.Report.TotalSteps);
     }
 
     return ratio;
 }
 
-MyCompany.Session.ReEnableButtons = function (previousNumber) {
+MyCompany.Session.reEnableButtons = function (previousNumber) {
     var className = 'shake';
 
     var j = 0;
@@ -170,7 +170,7 @@ MyCompany.Session.ReEnableButtons = function (previousNumber) {
         if (previousNumber == MyCompany.MinimumId + j) {
             //Delay is required for the animation to work.
             var delayMs = 120;
-            MyCompany.RunAnync(function () {
+            MyCompany.runAnync(function () {
                 var button = MyCompany.Session.Buttons[previousNumber - MyCompany.MinimumId];
                 button.classList.add(className);
             }, delayMs);
@@ -181,31 +181,31 @@ MyCompany.Session.ReEnableButtons = function (previousNumber) {
     while (++j < MyCompany.ButtonCount);
 }
 
-MyCompany.Session.Start = function (progressControl, progressText, graphControl) {
-    var ratio = MyCompany.Report.CalcRatio();
+MyCompany.Session.start = function (progressControl, progressText, graphControl) {
+    var ratio = MyCompany.Report.calcRatio();
     progressControl.value = ratio;
     progressText.innerText = ratio;
 
     MyCompany.Session.Count = 0;
 
     var previousNumber = MyCompany.Session.NumberToGuess;
-    MyCompany.Session.NumberToGuess = MyCompany.GetRandomInt(MyCompany.MinimumId, MyCompany.ButtonCount);
+    MyCompany.Session.NumberToGuess = MyCompany.getRandomInt(MyCompany.MinimumId, MyCompany.ButtonCount);
 
-    MyCompany.Session.ReEnableButtons(previousNumber);
-    MyCompany.DrawGraph(graphControl);
+    MyCompany.Session.reEnableButtons(previousNumber);
+    MyCompany.drawGraph(graphControl);
 };
 
-MyCompany.GetButtonId = function (button) {
+MyCompany.getButtonId = function (button) {
     var key = button.accessKey;
     var buttonId = parseInt(key);
     if (buttonId < MyCompany.MinimumId || MyCompany.ButtonCount < buttonId) {
-        throw 'Bad buttonId=' + buttonId;
+        throw new Error('Bad buttonId=' + buttonId);
     }
 
     return buttonId;
 }
 
-MyCompany.FinishSession = function() {
+MyCompany.finishSession = function() {
     MyCompany.Report.TotalSteps += MyCompany.ButtonCount - 1;
     MyCompany.Report.IncorrectSteps += MyCompany.Session.Count - 1;
     MyCompany.Report.Sessions++;
@@ -217,9 +217,9 @@ MyCompany.FinishSession = function() {
     MyCompany.Report.Distribution[MyCompany.Session.Count]++;
 }
 
-MyCompany.FormHtmlReport = function () {
+MyCompany.formHtmlReport = function () {
     var sessions = MyCompany.Report.Sessions;
-    var firstPercent = (0 == sessions) ? '0' : MyCompany.DecimalToString(MyCompany.MaxPercentage *
+    var firstPercent = (0 == sessions) ? '0' : MyCompany.decimalToString(MyCompany.MaxPercentage *
 	MyCompany.Report.FirstStepCount / sessions);
 
     var result = 'Last attempt: ' + MyCompany.Session.Count +
@@ -234,19 +234,19 @@ MyCompany.FormHtmlReport = function () {
     return result;
 }
 
-MyCompany.ReportAndRestartSession = function (progressControl, progressText, graphControl, runningTimeText) {
-    runningTimeText.innerHTML = MyCompany.FormHtmlReport();
+MyCompany.reportAndRestartSession = function (progressControl, progressText, graphControl, runningTimeText) {
+    runningTimeText.innerHTML = MyCompany.formHtmlReport();
 
-    MyCompany.RunAnync(function () {
-        MyCompany.Session.Start(progressControl, progressText, graphControl);
+    MyCompany.runAnync(function () {
+        MyCompany.Session.start(progressControl, progressText, graphControl);
     });
 }
 
-MyCompany.OnButtonClick = function (progressControl, progressText, graphControl, runningTimeText) {
+MyCompany.onButtonClick = function (progressControl, progressText, graphControl, runningTimeText) {
     var result = function () {
         try {
             var button = arguments[0].currentTarget;
-            var buttonId = MyCompany.GetButtonId(button);
+            var buttonId = MyCompany.getButtonId(button);
             button.disabled = true;
 
             MyCompany.Session.Count++;
@@ -261,8 +261,8 @@ MyCompany.OnButtonClick = function (progressControl, progressText, graphControl,
             }
 
             if (isCorrect || shallStart) {
-                MyCompany.FinishSession();
-                MyCompany.ReportAndRestartSession(progressControl, progressText, graphControl, runningTimeText);
+                MyCompany.finishSession();
+                MyCompany.reportAndRestartSession(progressControl, progressText, graphControl, runningTimeText);
             }
         }
         catch (ex) {
@@ -273,12 +273,12 @@ MyCompany.OnButtonClick = function (progressControl, progressText, graphControl,
     return result;
 }
 
-MyCompany.FillNumberArray = function(size, defaultValue) {
+MyCompany.fillNumberArray = function(size, defaultValue) {
     var result = Array.apply(null, Array(size)).map(Number.prototype.valueOf, defaultValue);
     return result;
 }
 
-MyCompany.InitializeMembers = function() {
+MyCompany.initializeMembers = function() {
     MyCompany.MaxPercentage = 100;
     MyCompany.MinimumId = 1;
     MyCompany.ButtonCount = 9;
@@ -288,14 +288,14 @@ MyCompany.InitializeMembers = function() {
     MyCompany.Report.IncorrectSteps = 0;
     MyCompany.Report.FirstStepCount = 0;
     MyCompany.Report.Sessions = 0;
-    MyCompany.Report.Distribution = MyCompany.FillNumberArray(MyCompany.ButtonCount, 0);
+    MyCompany.Report.Distribution = MyCompany.fillNumberArray(MyCompany.ButtonCount, 0);
 
     MyCompany.Session.Buttons = [];
     MyCompany.Session.Count = 0;
     MyCompany.Session.NumberToGuess = 0;
 }
 
-MyCompany.CreateElementForButton = function(id) {
+MyCompany.createElementForButton = function(id) {
     var element = document.createElement('button');
     element.id = 'id_' + id;
     element.type = 'button';
@@ -308,34 +308,34 @@ MyCompany.CreateElementForButton = function(id) {
     return element;
 }
 
-MyCompany.AppendSeparator = function(element) {
+MyCompany.appendSeparator = function(element) {
     var separator = document.createElement('span');
     separator.innerHTML = ' ';
     element.appendChild(separator);
 }
 
-MyCompany.InitializeButtons = function (buttons, progressControl, progressText, graphControl, runningTimeText) {
+MyCompany.initializeButtons = function (buttons, progressControl, progressText, graphControl, runningTimeText) {
     buttons.innerHTML = '';
 
     var j = 0;
     do {
         var id = MyCompany.MinimumId + j;
 
-        var element = MyCompany.CreateElementForButton(id);
-        element.onclick = MyCompany.OnButtonClick(progressControl, progressText, graphControl, runningTimeText);
+        var element = MyCompany.createElementForButton(id);
+        element.onclick = MyCompany.onButtonClick(progressControl, progressText, graphControl, runningTimeText);
 
         buttons.appendChild(element);
         MyCompany.Session.Buttons.push(element);
 
         var isNotLast = j < MyCompany.ButtonCount - 1;
         if (isNotLast) {
-            MyCompany.AppendSeparator(buttons);
+            MyCompany.appendSeparator(buttons);
         }
     }
     while (++j < MyCompany.ButtonCount);
 }
 
-MyCompany.InitializeButtonPressed = function () {
+MyCompany.initializeButtonPressed = function () {
     var onKeyPressName = 'keypress';
 
     var keyPressed = function (e) {
@@ -358,23 +358,23 @@ MyCompany.InitializeButtonPressed = function () {
     body.addEventListener(onKeyPressName, keyPressed);
 }
 
-MyCompany.InitializeMembers();
+MyCompany.initializeMembers();
 
-MyCompany.InitializeControls = function () {
-    var buttons = MyCompany.GetControl('buttons');
-    var runningTimeText = MyCompany.GetControl('runningTimeText');
-    var graphControl = MyCompany.GetControl('graph');
-    var progressControl = MyCompany.GetControl('progress');
-    var progressText = MyCompany.GetControl('progressText');
+MyCompany.initializeControls = function () {
+    var buttons = MyCompany.getControl('buttons');
+    var runningTimeText = MyCompany.getControl('runningTimeText');
+    var graphControl = MyCompany.getControl('graph');
+    var progressControl = MyCompany.getControl('progress');
+    var progressText = MyCompany.getControl('progressText');
 
     if (null == buttons || null == runningTimeText || null == graphControl ||
 		null == progressControl || null == progressText) {
         return;
     }
 
-    MyCompany.InitializeButtons(buttons, progressControl, progressText, graphControl, runningTimeText);
-    MyCompany.InitializeButtonPressed();
+    MyCompany.initializeButtons(buttons, progressControl, progressText, graphControl, runningTimeText);
+    MyCompany.initializeButtonPressed();
 
     runningTimeText.innerHTML = 'Click one of the buttons.';
-    MyCompany.Session.Start(progressControl, progressText, graphControl);
+    MyCompany.Session.start(progressControl, progressText, graphControl);
 };
