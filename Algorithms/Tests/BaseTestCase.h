@@ -29,12 +29,12 @@ namespace MyCompany
         BaseTestCase(BaseTestCase &&) = default;
         BaseTestCase& operator = (BaseTestCase &&) = default;
 
-        inline const std::string& GetName() const
+        inline const std::string& get_Name() const
         {
           return Name;
         }
 
-        inline void SetName(std::string&& name)
+        inline void set_Name(std::string&& name)
         {
           Name = std::forward<std::string>(name);
         }

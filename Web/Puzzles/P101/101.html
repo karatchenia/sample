@@ -1,0 +1,325 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Minimum number of chess board repaintings</title>
+</head>
+<body>
+<style type="text/css" media="all">
+div{
+ width: 100%;
+ height: 100%;
+ padding: 0 0 0 0;
+ border: 0;
+ margin: 0 0 0 0;
+ font-size: 0;
+}
+input, textarea{
+ display: block;
+ width: 99%;
+ height: 99%;
+ padding: 0;
+ margin: 0 0 0 0;
+ font-size: 2em;
+ font-family: Arial, monospace, Tahoma, serif, sans-serif;
+}
+.success{
+ color: green;
+}
+.error{
+ color: red;
+}
+</style>
+<div id="d">
+</div>
+<script>
+"use strict";
+
+function init() {
+	var lineBreak = " \n";
+    var startMessage = "Start from the bottom right-most cell which must have black color. Move the mouse over the cells until they are colored properly." +
+	lineBreak +
+	"This page can help solving the problem 101 'Room painting' on page 57 of the book by Anany and Maria Levitin 'Algorithmic puzzles', 2011, Oxford University Press." +
+	lineBreak +
+	"The task is to color the initially white chess board," +
+	" starting/stopping at an outer cell, not necessary the same," +
+	" making only vertical and horizontal moves, and swapping the cell's color with each visit," +
+	" until the chess board looks like a real one, having 32 alternating black/white cells." +
+	lineBreak +
+	"The file '/pics/56moves.gif' demonstrates how to do it in 56 repaintings.";
+
+    var badStartMessage = "The first step must be made in the bottom right-most (!) corner.";
+
+    var liveliness = {
+        Alive: 0,
+        Dead: 1,
+        BadStart: 2
+    };
+
+    function getFontName() {//TODO: p2. Detect whether a font in installed.
+        var result = "Arial";
+        return result;
+    }
+
+    function isEven(a) {
+        var result = 0 === (a % 2);
+        return result;
+    }
+
+    function getSize() {
+        var size = 8;
+
+        if (!isEven(size)) {//The size must be even.
+            size++;
+        }
+
+        return size;
+    }
+
+    function getFillStyle(color, isValid) {
+        var black = isValid ? "000000" : "dddddd";
+        var white = isValid ? "aaaaaa" : "777777";
+        var result = "#" + (0 === color ? black : white);
+        return result;
+    }
+
+    function getColumn(id, size) {
+        var result = id % size;
+        return result;
+    }
+
+    function getRow(id, size) {
+        var column = getColumn(id, size);
+        var result = (id - column) / size;
+        return result;
+    }
+
+    function expectedColor(size, id) {
+        var column = getColumn(id, size);
+        var row = getRow(id, size);
+
+        var sum = isEven(column) + isEven(row);
+        var result = isEven(sum) ? 0 : 1;
+        return result;
+    }
+
+    function isValidColor(size, id, actualColor) {
+        var expected = expectedColor(size, id);
+        var result = actualColor === expected;
+        return result;
+    }
+
+    function getCanvasSize(size) {
+        var width = window.innerWidth || document.body.clientWidth;
+        var height = window.innerHeight || document.body.clientHeight;
+        var coef = 1.2;
+        var minSize = Math.round(Math.min(width, height) / size / coef);
+
+        var defaultValue = 16;
+        if ("number" != (typeof minSize) || minSize <= defaultValue) {
+            return defaultValue;
+        }
+
+        return minSize;
+    }
+
+    function isOnEdge(size, position) {
+        var result = 0 === position || (size - 1) === position;
+        return result;
+    }
+
+    function createCanvas(parent, id, status) {
+        var c = document.createElement("canvas");
+        parent.appendChild(c);
+
+        var canvasContext = c.getContext("2d");
+
+        function fillColor(color) {
+            var isValid = isValidColor(status.size, id, color);
+            canvasContext.fillStyle = getFillStyle(color, isValid);
+
+            var pad = 1;
+            var size2 = status.width - pad;
+            canvasContext.fillRect(pad, pad, size2, size2);
+        }
+
+        function resetColor() {
+            fillColor(status.defaultColor);
+        }
+
+        function swapColor() {
+            status.colors[id] = 1 - status.colors[id];
+            fillColor(status.colors[id]);
+        }
+
+        function addStep() {
+            var wrongStart = 0 === status.steps && (status.size * status.size - 1) !== id;
+            if (wrongStart) {
+                status.alive = liveliness.BadStart;
+                return;
+            }
+
+            status.steps++;
+
+            var hasTooManySteps = status.size * status.size < status.steps;
+            if (hasTooManySteps) {
+                status.alive = liveliness.Dead;
+            }
+        }
+
+        function updateErrorsAndReport() {
+            status.errors += isValidColor(status.size, id, status.colors[id]) ? -1 : 1;
+
+            var column = getColumn(id, status.size);
+            var row = getRow(id, status.size);
+
+            var isOk = (0 === status.errors) && (isOnEdge(status.size, row) || isOnEdge(status.size, column));
+            status.report.className = isOk ? "success" : (liveliness.Alive === status.alive ? "" : "error");
+
+            var mainMessage = liveliness.BadStart === status.alive ?
+                badStartMessage :
+                "Steps: " + status.steps + ", errors: " + status.errors + ".";
+
+            var resetMessage = liveliness.Alive === status.alive ? "" : " To restart, press the Reset button.";
+
+            status.report.value = mainMessage + resetMessage;
+        }
+
+        function drawText() {
+            var isValid = isValidColor(status.size, id, status.colors[id]);
+            canvasContext.fillStyle = isValid ? "#00ff00" : "#ff0000";
+            canvasContext.textBaseline = "middle";
+            canvasContext.textAlign = "center";
+
+            var halfWidth = status.width / 2;
+            var fontSize = Math.round(halfWidth / 1.1);
+            var fontName = getFontName();
+            canvasContext.font = fontSize.toString() + "px " + fontName;
+
+            var text = status.steps.toString();
+            canvasContext.fillText(text, halfWidth, halfWidth);
+        }
+
+        function enterCanvas() {
+            if (liveliness.Alive !== status.alive) {
+                return;
+            }
+
+            addStep();
+            swapColor();
+            updateErrorsAndReport();
+            drawText();
+        }
+
+        c.id = "c" + id;
+        c.height = c.width = status.width;
+        c.addEventListener("mouseenter", enterCanvas, false);
+
+        resetColor();
+        return {
+            resetColor: resetColor
+		};
+    }
+
+    function statusContext(size, initialErrors, width) {
+        var me = this;
+
+        this.size = size;
+        this.width = width;
+
+        this.reportControls = document.createElement("article");
+        this.reportControls.id = "art";
+        this.report = document.createElement("textarea");
+        this.reportControls.appendChild(this.report);
+
+        this.defaultColor = 1;
+        this.colors = [];
+
+        var resetColors = function () {
+            for (var i = 0; i < size * size; ++i) {
+                me.colors[i] = me.defaultColor;
+            }
+        };
+
+        this.reset = function () {
+            me.alive = liveliness.Alive;
+            me.steps = 0;
+            me.errors = initialErrors;
+
+            resetColors();
+        };
+        this.reset();
+    }
+
+    function createMatrix(context) {
+        var result = [];
+        var parentDiv = document.getElementById("d");
+        var div = null;
+
+        for (var i = 0; i < context.size * context.size; ++i) {
+            if (0 === (i % context.size)) {
+                div = document.createElement("div");
+                parentDiv.appendChild(div);
+            }
+
+            result.push(createCanvas(div, i, context));
+        }
+
+        return result;
+    }
+
+    function resetReportValue(reportElement) {
+        reportElement.className = "";
+        reportElement.value = startMessage;
+    }
+
+    function finishCreatingReportElement(context) {
+        var reportElement = context.report;
+        reportElement.id = "txt";
+        reportElement.rows = "2";
+        reportElement.setAttribute("readOnly", "true");
+        resetReportValue(reportElement);
+
+        document.body.appendChild(context.reportControls);
+    }
+
+    function addResetButton(context, matrixArr) {
+        function btnClick(ev) {
+            ev.preventDefault();
+            context.reset();
+            resetReportValue(context.report);
+
+            for (var i = 0; i < context.size * context.size; ++i) {
+                matrixArr[i].resetColor();
+            }
+        }
+
+        var btn = document.createElement("input");
+        btn.id = "btn";
+        btn.value = "Reset";
+        btn.type = "reset";
+
+        context.reportControls.appendChild(btn);
+
+        btn.addEventListener("click", btnClick, false);
+    }
+
+    (function () {
+        try {
+            var size = getSize();
+            var width = getCanvasSize(size);
+            var context = new statusContext(size, size * size / 2, width);
+
+            var matrixArr = createMatrix(context);
+            finishCreatingReportElement(context);
+            addResetButton(context, matrixArr);
+        } catch (e) {
+            console.log(e);
+        }
+    })();
+}
+
+init();
+</script>
+</body>
+</html>
