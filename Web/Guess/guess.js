@@ -1,6 +1,6 @@
 'use strict';
 
-if (null == window.MyCompany) {
+if ('undefined' === typeof (window.MyCompany)) {
     window.MyCompany = {};
 }
 
@@ -19,7 +19,7 @@ MyCompany.getRandomInt = function (minInclusive, maxExclusive) {
 };
 
 MyCompany.runAnync = function (callback, delay) {
-    if (null == callback) {
+	if ('undefined' === typeof (callback)) {
         throw new Error('The "callback" must be not null in runAnync.');
     }
 
@@ -33,13 +33,11 @@ MyCompany.runAnync = function (callback, delay) {
 };
 
 MyCompany.getControl = function (controlId) {
-    var result = (!controlId || !(controlId.length))
-        ? null : document.getElementById(controlId);
+    var result = (!controlId || !(controlId.length)) ? undefined : document.getElementById(controlId);
 
-    if (null == result) {
+	if ('undefined' === typeof (result)) {
         var nameFormatted = !controlId ? 'null' : controlId;
-        console.log('Error: cannot find the control named "'
-            + nameFormatted + '".');
+        console.log('Error: cannot find the control named "' + nameFormatted + '".');
     }
 
     return result;
@@ -60,9 +58,10 @@ MyCompany.scaleArray = function (values, valuesSize, multiplyCoefficient) {
     var j = 0;
     do {
         values[j] = multiplyCoefficient * values[j];
+		++j;
     }
-    while (++j < valuesSize);
-}
+    while (j < valuesSize);
+};
 
 MyCompany.preCalcRatiosAndMax = function (values, valuesSize, offset, multiplyCoefficient) {
     var ratios = [];
@@ -74,14 +73,16 @@ MyCompany.preCalcRatiosAndMax = function (values, valuesSize, offset, multiplyCo
         if (maxValue < ratios[j]) {
             maxValue = ratios[j];
         }
+		
+		++j;
     }
-    while (++j < valuesSize);
+    while (j < valuesSize);
 
     var result = {};
     result.Ratios = ratios;
     result.MaxValue = maxValue;
     return result;
-}
+};
 
 MyCompany.getDistributionRatios = function (values, valuesSize, offset, totalCount, maxPercentage) {
     var multiplyCoefficient = !totalCount ? 0 : maxPercentage / totalCount;
@@ -95,10 +96,10 @@ MyCompany.getDistributionRatios = function (values, valuesSize, offset, totalCou
     }
 
     return result;
-}
+};
 
 MyCompany.ratioToColor = function (ratio) {
-	if (null == ratio){
+	if ('undefined' === typeof ratio){
 		ratio = 0;
 	}
 	
@@ -111,7 +112,7 @@ MyCompany.ratioToColor = function (ratio) {
     var color = (Math.floor(colorMax * ratio)).toString(16);
     var result = color + color + color;
     return result;
-}
+};
 
 MyCompany.drawDiagram = function (context, barCount, ratios, maxValue) {
     var j = 0;
@@ -130,12 +131,13 @@ MyCompany.drawDiagram = function (context, barCount, ratios, maxValue) {
         var x = width * (j + 0.4);
         var y = maxValue + 20;
         context.fillText(text, x, y);
+		++j;
     }
-    while (++j < barCount);
-}
+    while (j < barCount);
+};
 
 MyCompany.drawGraph = function (graphControl) {
-    if (0 == MyCompany.Report.Sessions) {
+    if (0 === MyCompany.Report.Sessions) {
         return;
     }
 
@@ -147,7 +149,7 @@ MyCompany.drawGraph = function (graphControl) {
     context.font = MyCompany.Font;
 
     MyCompany.drawDiagram(context, MyCompany.ButtonCount, ratios, MyCompany.MaxPercentage);
-}
+};
 
 MyCompany.Report.calcRatio = function () {
     var ratio = 0;
@@ -157,7 +159,7 @@ MyCompany.Report.calcRatio = function () {
     }
 
     return ratio;
-}
+};
 
 MyCompany.Session.reEnableButtons = function (previousNumber) {
     var className = 'shake';
@@ -177,9 +179,10 @@ MyCompany.Session.reEnableButtons = function (previousNumber) {
         }
 
         button.disabled = false;
+		++j;
     }
-    while (++j < MyCompany.ButtonCount);
-}
+    while (j < MyCompany.ButtonCount);
+};
 
 MyCompany.Session.start = function (progressControl, progressText, graphControl) {
     var ratio = MyCompany.Report.calcRatio();
@@ -197,13 +200,13 @@ MyCompany.Session.start = function (progressControl, progressText, graphControl)
 
 MyCompany.getButtonId = function (button) {
     var key = button.accessKey;
-    var buttonId = parseInt(key);
+    var buttonId = parseInt(key, 10);
     if (buttonId < MyCompany.MinimumId || MyCompany.ButtonCount < buttonId) {
         throw new Error('Bad buttonId=' + buttonId);
     }
 
     return buttonId;
-}
+};
 
 MyCompany.finishSession = function() {
     MyCompany.Report.TotalSteps += MyCompany.ButtonCount - 1;
@@ -215,11 +218,11 @@ MyCompany.finishSession = function() {
     }
 
     MyCompany.Report.Distribution[MyCompany.Session.Count]++;
-}
+};
 
 MyCompany.formHtmlReport = function () {
     var sessions = MyCompany.Report.Sessions;
-    var firstPercent = (0 == sessions) ? '0' : MyCompany.decimalToString(MyCompany.MaxPercentage *
+    var firstPercent = (0 === sessions) ? '0' : MyCompany.decimalToString(MyCompany.MaxPercentage *
 	MyCompany.Report.FirstStepCount / sessions);
 
     var result = 'Last attempt: ' + MyCompany.Session.Count +
@@ -232,7 +235,7 @@ MyCompany.formHtmlReport = function () {
     '<br>Total sessions: ' + MyCompany.Report.Sessions + '.';
 
     return result;
-}
+};
 
 MyCompany.reportAndRestartSession = function (progressControl, progressText, graphControl, runningTimeText) {
     runningTimeText.innerHTML = MyCompany.formHtmlReport();
@@ -240,7 +243,7 @@ MyCompany.reportAndRestartSession = function (progressControl, progressText, gra
     MyCompany.runAnync(function () {
         MyCompany.Session.start(progressControl, progressText, graphControl);
     });
-}
+};
 
 MyCompany.onButtonClick = function (progressControl, progressText, graphControl, runningTimeText) {
     var result = function () {
@@ -271,12 +274,12 @@ MyCompany.onButtonClick = function (progressControl, progressText, graphControl,
     };
 
     return result;
-}
+};
 
 MyCompany.fillNumberArray = function(size, defaultValue) {
     var result = Array.apply(null, Array(size)).map(Number.prototype.valueOf, defaultValue);
     return result;
-}
+};
 
 MyCompany.initializeMembers = function() {
     MyCompany.MaxPercentage = 100;
@@ -293,7 +296,7 @@ MyCompany.initializeMembers = function() {
     MyCompany.Session.Buttons = [];
     MyCompany.Session.Count = 0;
     MyCompany.Session.NumberToGuess = 0;
-}
+};
 
 MyCompany.createElementForButton = function(id) {
     var element = document.createElement('button');
@@ -306,13 +309,13 @@ MyCompany.createElementForButton = function(id) {
     s.innerHTML = '<span class="underline">' + id + '</span>';
     element.appendChild(s);
     return element;
-}
+};
 
 MyCompany.appendSeparator = function(element) {
     var separator = document.createElement('span');
     separator.innerHTML = ' ';
     element.appendChild(separator);
-}
+};
 
 MyCompany.initializeButtons = function (buttons, progressControl, progressText, graphControl, runningTimeText) {
     buttons.innerHTML = '';
@@ -331,9 +334,11 @@ MyCompany.initializeButtons = function (buttons, progressControl, progressText, 
         if (isNotLast) {
             MyCompany.appendSeparator(buttons);
         }
+		
+		++j;
     }
-    while (++j < MyCompany.ButtonCount);
-}
+    while (j < MyCompany.ButtonCount);
+};
 
 MyCompany.initializeButtonPressed = function () {
     var onKeyPressName = 'keypress';
@@ -356,7 +361,7 @@ MyCompany.initializeButtonPressed = function () {
     var body = document.documentElement.lastElementChild;
     body.removeEventListener(onKeyPressName, keyPressed);
     body.addEventListener(onKeyPressName, keyPressed);
-}
+};
 
 MyCompany.initializeMembers();
 
@@ -367,8 +372,9 @@ MyCompany.initializeControls = function () {
     var progressControl = MyCompany.getControl('progress');
     var progressText = MyCompany.getControl('progressText');
 
-    if (null == buttons || null == runningTimeText || null == graphControl ||
-		null == progressControl || null == progressText) {
+    if ('undefined' == typeof buttons || 'undefined' == typeof runningTimeText ||
+		'undefined' == typeof graphControl ||
+		'undefined' == typeof progressControl || 'undefined' == typeof progressText) {
         return;
     }
 

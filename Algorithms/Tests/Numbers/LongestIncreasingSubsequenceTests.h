@@ -4,11 +4,11 @@ namespace MyCompany
 {
   namespace Algorithms
   {
-    namespace Stack
+    namespace Numbers
     {
       namespace Tests
       {
-        void IsPushPopStackSequenceTests(void);
+        void LongestIncreasingSubsequenceTests(void);
       }
     }
   }
