@@ -9,8 +9,6 @@ using namespace std;
 using namespace MyCompany::Algorithms::Trees;
 using namespace MyCompany::Algorithms;
 
-using namespace std;
-
 namespace MyCompany
 {
 	namespace Algorithms
@@ -56,10 +54,10 @@ namespace MyCompany
 
 				BinaryIndexedTreeTest::Tree BinaryIndexedTreeTest::CreateTree()
 				{
-					const vector<size_t> indexesToAdd{ 1, 2, 4, 1, 7, 3, };
+					const vector<size_t> indexesToAdd{ 1, 2, 4, 1, 7, 3, 12 };
 					const auto maxIndex = * max_element(indexesToAdd.cbegin(), indexesToAdd.cend());
 
-					Tree result(maxIndex + Tree::InitialIndex);
+					Tree result(maxIndex);
 					for (const auto& index : indexesToAdd)
 					{
 						result.add(index);
@@ -68,10 +66,13 @@ namespace MyCompany
 					return result;
 				}
 
-				void BinaryIndexedTreeTest::CheckIndexOutOfRange(const Tree& tree)
+				void BinaryIndexedTreeTest::CheckIndexOutOfRange(
+					const Tree& tree)
 				{
+					const auto maxIndex = tree.max_index();
 					const auto tooLargeIndex = 123456789;
-					const string expectedMessage = "The index (123456789) must be between 1 and 15.";
+					const string expectedMessage = "The index (123456789) must be between 1 and "
+						+ to_string(maxIndex) + ".";
 					const string message = "CheckIndexOutOfRange";
 
 					Assert::ExpectException<out_of_range>(
@@ -81,10 +82,10 @@ namespace MyCompany
 
 				BinaryIndexedTreeTest::Request_vector BinaryIndexedTreeTest::GetRequests1()
 				{
-					//11, 2, 3, 4, 7
+					//11, 2, 3, 4, 7, 12
 					const Request_vector result{
 						Request{ 0, 1, 2 }, Request{ 1, 1, 2 },
-						Request{ 1, 7, 6 },
+						Request{ 1, 12, 7 },
 						Request{ 2, 3, 2 }, Request{ 2, 6, 3 },
 						Request{ 5, 5, 0 }, Request{ 5, 6, 0 }, Request{ 6, 6, 0 },
 						Request{ 7, 7, 1 },
@@ -128,7 +129,8 @@ namespace MyCompany
 				BinaryIndexedTreeTest::Request_vector BinaryIndexedTreeTest::GetRequests2()
 				{
 					const Request_vector result{
-						Request{ 0, 1, 32 }, Request{ 1, 1, 32 }, Request{ 1, 7, 7536 },
+						Request{ 0, 1, 32 }, Request{ 1, 1, 32 },
+						Request{ 1, 12, 7537 },
 						Request{ 2, 3, 502 }, Request{ 2, 6, 7503 },
 						Request{ 5, 5, 0 }, Request{ 5, 6, 7000 }, Request{ 6, 6, 7000 },
 						Request{ 7, 7, 1 },
@@ -139,11 +141,11 @@ namespace MyCompany
 				void BinaryIndexedTreeTest::TestValueAt(const Tree& tree, const string& stepName)
 				{
 					const auto max_index = tree.max_index();
-					Assert::Greater(max_index, BinaryIndexedTree<>::InitialIndex, "max_index");
+					Assert::Greater(max_index, BinaryIndexedTree<Number>::InitialIndex, "max_index");
 
 					const auto prefix = stepName + "_at_";
 
-					for (size_t i = BinaryIndexedTree<>::InitialIndex; i <= max_index; ++i)
+					for (size_t i = BinaryIndexedTree<Number>::InitialIndex; i <= max_index; ++i)
 					{
 						const auto expected = tree.value_at(i);
 						const auto actual = tree.get(i, i);

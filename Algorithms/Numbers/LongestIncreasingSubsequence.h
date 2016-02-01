@@ -10,7 +10,7 @@ namespace MyCompany
   {
     namespace Numbers
     {
-      template <typename TItem = int,
+      template <typename TItem,
         typename TContainer = std::vector<TItem>,
         typename TComparer = std::less<TItem>>
       class LongestIncreasingSubsequence final
