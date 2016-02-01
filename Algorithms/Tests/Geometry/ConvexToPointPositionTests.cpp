@@ -86,9 +86,8 @@ namespace MyCompany
             << ", side= " << side;
           const auto description = ss.str();
 
-          const size_t size = 3;
           const auto actual = ConvexToPointPosition<Coordinate>(
-            point, size, p1, p2, p3);
+            point, { p1, p2, p3 });
           Assert::AreEqual(position, actual.first, description);
           Assert::AreEqual(side, actual.second, description);
         }

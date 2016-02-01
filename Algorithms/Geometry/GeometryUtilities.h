@@ -1,6 +1,6 @@
 #pragma once
 
-#include<stdarg.h>
+#include <vector>
 #include "../StreamUtilities.h"
 #include "../ClassProblems\Point.h"
 
@@ -100,9 +100,9 @@ namespace MyCompany
         typename Point = MyCompany::Algorithms::ClassProblems::Point2D<Coordinate>>
         std::pair<PointPosition, size_t> ConvexToPointPosition(
           const Point& checkPoint,
-          const size_t size,
-          const Point ...)
+          const std::vector<Point>& otherPoints)
       {
+        const size_t size = otherPoints.size();
         constexpr size_t minSize = 3;
         if (size < minSize)
         {
@@ -117,15 +117,12 @@ namespace MyCompany
         auto positive = true;
         auto negative = true;
 
-        va_list args;
-        va_start(args, size);
-
-        const Point firstPoint = va_arg(args, Point);
+        const Point firstPoint = otherPoints[0];
         auto previous = firstPoint;
 
         for (;;)
         {
-          const Point current = va_arg(args, Point);
+          const Point current = otherPoints[1 + index];
 
           if (IsAlongSide<Coordinate, Point>(
             checkPoint, previous, current,
@@ -150,7 +147,6 @@ namespace MyCompany
 
           previous = current;
         }
-        va_end(args);
 
         if (PointPosition::AlongSide == position)
         {
