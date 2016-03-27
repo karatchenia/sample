@@ -6,11 +6,20 @@
 
 using namespace std;
 
-void report_error_and_exit(const string& decription, const unsigned long long err = 0)
+void report_error_and_exit(const string& error_message, const errno_t err = 0)
 {
   const auto error_code = err ? err : GetLastError();
-  cout << decription << " Error code: " << error_code << ".\n";
+  cout << error_message << " Error code: " << error_code << ".\n";
   exit(0);
+}
+
+template<typename T>
+inline void check(const T& isOk, const string& error_message)
+{
+  if (!isOk)
+  {
+    report_error_and_exit(error_message);
+  }
 }
 
 int main()
@@ -23,28 +32,15 @@ int main()
     return 0;
   }
 
-  if (!OpenClipboard(nullptr))
-  {
-    report_error_and_exit("Error opening the clipboard.");
-  }
-
-  if (!EmptyClipboard())
-  {
-    report_error_and_exit("Error emptying the clipboard.");
-  }
+  check(OpenClipboard(nullptr), "Error opening the clipboard.");
+  check(EmptyClipboard(), "Error emptying the clipboard.");
 
   const auto buffer_size = (word.size() + 1) * sizeof(char);
   auto global_buffer = GlobalAlloc(GMEM_DDESHARE, buffer_size);
-  if (!global_buffer)
-  {
-    report_error_and_exit("Error allocating the buffer.");
-  }
+  check(global_buffer, "Error allocating the buffer.");
 
   auto buffer = static_cast<char*>(GlobalLock(global_buffer));
-  if (!buffer)
-  {
-    report_error_and_exit("Error locking the buffer.");
-  }
+  check(buffer, "Error locking the buffer.");
 
   const auto err = strcpy_s(buffer, buffer_size, word.c_str());
   if (err)
@@ -52,20 +48,10 @@ int main()
     report_error_and_exit("Error copying the string to the buffer.", err);
   }
   
-  if (!GlobalUnlock(global_buffer))
-  {
-    report_error_and_exit("Error unlocking the buffer.");
-  }
-  
-  if (!SetClipboardData(CF_TEXT, global_buffer))
-  {
-    report_error_and_exit("Error setting the clipboard data.");
-  }
+  check(GlobalUnlock(global_buffer), "Error unlocking the buffer.");
+  check(SetClipboardData(CF_TEXT, global_buffer), "Error setting the clipboard data.");
+  check(CloseClipboard(), "Error closing the clipboard.");
 
-  if (!CloseClipboard())
-  {
-    report_error_and_exit("Error closing the clipboard.");
-  }
-
+  cout << word.size() << " symbol(s) copied to the clipboard.\n";
   return 0;
 }
